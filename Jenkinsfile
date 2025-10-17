@@ -3,24 +3,6 @@
 
 pipeline {
     agent any
-    parameters { /* ...保持不变... */ }
-    stages { /* ...保持不变... */ }
-
-    post {
-        always {
-            // 调用共享库中的函数
-            pipelineUtils.notify(currentBuild.currentResult)
-        }
-        success {
-            echo 'Pipeline executed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed!'
-        }
-    }
-}
-pipeline {
-    agent any
 
     parameters {
         // 定义一个字符串参数，用于指定部署环境
@@ -80,9 +62,18 @@ pipeline {
         }
     }
 
+    // 这是被替换和更新后的 post 块
     post {
         always {
-            echo "Pipeline finished. Status: ${currentBuild.currentResult}"
+            // 调用共享库中的函数
+            pipelineUtils.notify(currentBuild.currentResult)
+        }
+        success {
+            echo 'Pipeline executed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
         }
     }
 }
+
