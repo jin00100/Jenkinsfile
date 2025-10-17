@@ -1,3 +1,24 @@
+// 在文件顶部引入共享库
+@Library('my-shared-lib') _
+
+pipeline {
+    agent any
+    parameters { /* ...保持不变... */ }
+    stages { /* ...保持不变... */ }
+
+    post {
+        always {
+            // 调用共享库中的函数
+            pipelineUtils.notify(currentBuild.currentResult)
+        }
+        success {
+            echo 'Pipeline executed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
+}
 pipeline {
     agent any
 
