@@ -1,40 +1,67 @@
 pipeline {
-    agent any // 指定流水线可以在任何可用的 Jenkins agent 上执行
+    agent any
+
+    parameters {
+        // 定义一个字符串参数，用于指定部署环境
+        string(name: 'DEPLOY_ENV', defaultValue: 'staging', description: 'Deployment environment (staging or production)')
+        // 定义一个布尔参数，用于决定是否执行性能测试
+        booleanParam(name: 'RUN_PERFORMANCE_TESTS', defaultValue: false, description: 'Run performance tests?')
+    }
 
     stages {
         stage('Build') {
             steps {
-                // 打印一条消息，模拟构建过程
-                echo 'Building the application...'
-                // 在实际项目中，这里会是 mvn clean install, npm install, go build 等命令
+                echo "Building the application..."
             }
         }
-        stage('Test') {
+
+        // 并行测试阶段
+        stage('Parallel Tests') {
+            parallel {
+                stage('Unit Tests') {
+                    steps {
+                        echo "Running unit tests..."
+                        // 模拟单元测试耗时
+                        sh 'sleep 5'
+                    }
+                }
+                stage('Integration Tests') {
+                    steps {
+                        echo "Running integration tests..."
+                        // 模拟集成测试耗时
+                        sh 'sleep 10'
+                    }
+                }
+            }
+        }
+
+        // 条件执行的性能测试阶段
+        stage('Performance Tests') {
+            when {
+                // 仅当 RUN_PERFORMANCE_TESTS 参数为 true 时执行
+                expression { params.RUN_PERFORMANCE_TESTS == true }
+            }
             steps {
-                // 打印一条消息，模拟测试过程
-                echo 'Running tests...'
-                // 在实际项目中，这里会是 mvn test, npm test, go test 等命令
+                echo "Running performance tests..."
             }
         }
+
+        // 条件执行的部署阶段
         stage('Deploy') {
+            when {
+                // 仅当分支是 main 并且部署环境是 production 时才执行
+                branch 'main'
+                expression { params.DEPLOY_ENV == 'production' }
+            }
             steps {
-                // 打印一条消息，模拟部署过程
-                echo 'Deploying the application...'
-                // 在实际项目中，这里会是 scp, docker push, kubectl apply 等命令
+                echo "Deploying to ${params.DEPLOY_ENV} environment..."
             }
         }
     }
 
     post {
-        // post 部分定义了流水线完成后要执行的操作
         always {
-            echo 'Pipeline finished.'
-        }
-        success {
-            echo 'Pipeline executed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed!'
+            echo "Pipeline finished. Status: ${currentBuild.currentResult}"
         }
     }
 }
