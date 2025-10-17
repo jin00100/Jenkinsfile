@@ -66,7 +66,9 @@ pipeline {
     post {
         always {
             // 调用共享库中的函数
-            pipelineUtils.notify(currentBuild.currentResult)
+            script {
+                pipelineUtils.notify(currentBuild.currentResult)
+            }
         }
         success {
             echo 'Pipeline executed successfully!'
